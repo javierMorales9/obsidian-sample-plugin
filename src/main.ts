@@ -4,7 +4,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { createContext } from 'react';
 import { Root, createRoot } from "react-dom/client";
-import { ReactView } from 'src/ReactView';
+import { ReactView } from 'src/components/ReactView';
 
 export const AppContext = createContext<App | undefined>(undefined);
 export const useApp = (): App | undefined => {
@@ -35,14 +35,15 @@ export default class FuzzySearcher extends Plugin {
 				element.style.justifyContent = 'center';
 				element.style.alignItems = 'center';
 
-				ReactDOM.render(
+				const root = createRoot(element);
+
+				root.render(
 					React.createElement(
 						AppContext.Provider,
 						{ value: this.app },
 						React.createElement(ReactView, {})
 						//React.createElement('div', {}, 'Hello world')
 					),
-					element
 				);
 			},
 		});
