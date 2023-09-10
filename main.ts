@@ -40,6 +40,7 @@ export default class FuzzySearcher extends Plugin {
 						AppContext.Provider,
 						{ value: this.app },
 						React.createElement(ReactView, {})
+						//React.createElement('div', {}, 'Hello world')
 					),
 					element
 				);
