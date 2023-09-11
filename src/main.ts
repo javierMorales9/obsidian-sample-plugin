@@ -31,6 +31,22 @@ export default class FuzzySearcher extends Plugin {
 				);
 			},
 		});
+
+		this.addCommand({
+			id: 'move-down',
+			name: 'Move down in the tree',
+			callback: () => {
+				this.app.workspace.trigger('file-tree:move-down');
+			},
+		});
+
+		this.addCommand({
+			id: 'move-up',
+			name: 'Move up in the tree',
+			callback: () => {
+				this.app.workspace.trigger('file-tree:move-up');
+			},
+		});
 	}
 
 	onunload() {}

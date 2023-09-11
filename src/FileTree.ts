@@ -1,9 +1,11 @@
 export class FileTree {
 	name: string;
+	path: string;
 	children: FileTree[] = [];
 
-	constructor(name: string) {
+	constructor(name: string, path: string) {
 		this.name = name;
+		this.path = path;
 	}
 
 	addChild(path: string) {
@@ -12,7 +14,7 @@ export class FileTree {
 
 		let child = this.children.find((child) => child.name === childName);
 		if (!child) {
-			child = new FileTree(childName);
+			child = new FileTree(childName, this.path + path);
 			this.children.push(child);
 		}
 		if (pathParts.length > 1) {

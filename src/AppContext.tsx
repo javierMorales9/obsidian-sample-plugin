@@ -12,7 +12,7 @@ export const AppContext = createContext<ContextType>({
 export function AppProvider({ children, app }: { children: React.ReactNode, app: App }) {
 	const tree = useMemo(() => {
 		const files = app.vault.getFiles().map((file) => file.path);
-		const tree = new FileTree('/');
+		const tree = new FileTree('', '/');
 		for (const file of files) {
 			tree.addChild(file);
 		}
