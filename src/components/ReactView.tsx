@@ -3,9 +3,11 @@ import { FormProvider, useForm } from "react-hook-form";
 import { useApp } from "src/AppContext";
 import { FileTree } from "src/FileTree";
 import { z } from 'zod';
+import Fuse from 'fuse.js';
 
 const FileInfo = z.object({
 	path: z.string(),
+	searchText: z.string(),
 });
 
 type FileInfoType = z.infer<typeof FileInfo>;
@@ -16,6 +18,7 @@ export const ReactView = ({ close }: { close: () => void }) => {
 	const form = useForm<FileInfoType>({
 		defaultValues: {
 			path: "",
+			searchText: "",
 		},
 	});
 
@@ -41,7 +44,25 @@ export const ReactView = ({ close }: { close: () => void }) => {
 
 			return list;
 		}, [openTrees]);
+
+		const toShow = useMemo(() => {
+			if (form.getValues('searchText') === "")
+				return;
+
+			const searcher = new Fuse(list, {
+				keys: ['tree.name', 'tree.path'],
+			});
+
+			return searcher.search(form.getValues('searchText'));
+
+		}, [list]);
+		console.log('to show', toShow);
+
 		const [selected, setSelected] = useState<number>(0);
+
+		useEffect(() => {
+			form.setFocus('path');
+		}, []);
 
 		useEffect(() => {
 			const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,11 +88,11 @@ export const ReactView = ({ close }: { close: () => void }) => {
 							<div>
 								{
 									tree.children.length > 0 ? (
-										<div style={{paddingLeft: padding * 6 + 'px'}}>
+										<div style={{ paddingLeft: padding * 6 + 'px' }}>
 											<Dir tree={tree} selected={i === selected} />
 										</div>
 									) : (
-										<div style={{paddingLeft: padding * 6 + 'px'}}>
+										<div style={{ paddingLeft: padding * 6 + 'px' }}>
 											<File file={tree.name} selected={i === selected} />
 										</div>
 									)
@@ -116,7 +137,8 @@ export const ReactView = ({ close }: { close: () => void }) => {
 
 		return (
 			<div>
-				<List/>
+				<input className="" type="text" {...form.register('searchText')} />
+				<List />
 				<button onClick={next}>Next</button>
 			</div>
 		);
