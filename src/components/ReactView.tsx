@@ -24,6 +24,8 @@ export const ReactView = ({ close }: { close: () => void }) => {
 
 	function Path({ next }: { next: () => void }) {
 		const [openTrees, setOpenTress] = useState<FileTree[]>([root]);
+		const [selected, setSelected] = useState<number>(0);
+
 		const list = useMemo(() => {
 			const list: { tree: FileTree, padding: number }[] = [];
 
@@ -47,29 +49,29 @@ export const ReactView = ({ close }: { close: () => void }) => {
 
 		const toShow = useMemo(() => {
 			if (form.getValues('searchText') === "")
-				return;
+				return list;
 
 			const searcher = new Fuse(list, {
-				keys: ['tree.name', 'tree.path'],
+				keys: ['tree.name'],
 			});
 
-			return searcher.search(form.getValues('searchText'));
+			return searcher.search(form.getValues('searchText')).map(result => result.item);
 
-		}, [list]);
-		console.log('to show', toShow);
-
-		const [selected, setSelected] = useState<number>(0);
+		}, [list, form.watch('searchText')]);
 
 		useEffect(() => {
-			form.setFocus('path');
+			form.setFocus('searchText');
 		}, []);
 
 		useEffect(() => {
 			const handleKeyDown = (e: KeyboardEvent) => {
 				if (e.key === 'k' && e.altKey && selected > 0) {
 					setSelected(selected - 1);
-				} else if (e.key === 'j' && e.altKey && selected < list.length - 1) {
+				} else if (e.key === 'j' && e.altKey && selected < toShow.length - 1) {
 					setSelected(selected + 1);
+				}
+				else if (e.key === 'Escape') {
+					close();
 				}
 			};
 
@@ -79,30 +81,6 @@ export const ReactView = ({ close }: { close: () => void }) => {
 			};
 		}, [selected]);
 
-
-		function List() {
-			return (
-				<div>
-					{list.map(({ tree, padding }, i) => {
-						return (
-							<div>
-								{
-									tree.children.length > 0 ? (
-										<div style={{ paddingLeft: padding * 6 + 'px' }}>
-											<Dir tree={tree} selected={i === selected} />
-										</div>
-									) : (
-										<div style={{ paddingLeft: padding * 6 + 'px' }}>
-											<File file={tree.name} selected={i === selected} />
-										</div>
-									)
-								}
-							</div>
-						);
-					})}
-				</div>
-			)
-		}
 
 		function File({ file, selected }: { file: string, selected: boolean }) {
 			return <div className={`${selected ? 'text-orange-800' : ''}`}>{file}</div>;
@@ -138,7 +116,25 @@ export const ReactView = ({ close }: { close: () => void }) => {
 		return (
 			<div>
 				<input className="" type="text" {...form.register('searchText')} />
-				<List />
+				<div>
+					{toShow.map(({ tree, padding }, i) => {
+						return (
+							<div key={tree.path}>
+								{
+									tree.children.length > 0 ? (
+										<div style={{ paddingLeft: padding * 6 + 'px' }}>
+											<Dir tree={tree} selected={i === selected} />
+										</div>
+									) : (
+										<div style={{ paddingLeft: padding * 6 + 'px' }}>
+											<File file={tree.name} selected={i === selected} />
+										</div>
+									)
+								}
+							</div>
+						);
+					})}
+				</div>
 				<button onClick={next}>Next</button>
 			</div>
 		);

@@ -14,7 +14,10 @@ export class FileTree {
 
 		let child = this.children.find((child) => child.name === childName);
 		if (!child) {
-			child = new FileTree(childName, this.path + path);
+			child = new FileTree(
+				childName,
+				this.path + (this.path !== '/' ? '/' : '') + childName
+			);
 			this.children.push(child);
 		}
 		if (pathParts.length > 1) {
@@ -42,7 +45,8 @@ export class FileTree {
 
 	private generatePrintableObject() {
 		const printChildren = this.children.map((child) => {
-			const children = child.children.length > 0 ? child.generatePrintableObject() : [];
+			const children =
+				child.children.length > 0 ? child.generatePrintableObject() : [];
 			return { name: child.name, children };
 		}) as any;
 
