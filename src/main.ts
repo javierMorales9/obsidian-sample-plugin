@@ -1,22 +1,14 @@
-import { Plugin, App, Notice, PluginManifest } from 'obsidian';
-//import { CreationModal, FileData } from 'src/CreationModal';
+import { Plugin, App, PluginManifest } from 'obsidian';
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { createContext } from 'react';
-import { Root, createRoot } from "react-dom/client";
+import { Root, createRoot } from 'react-dom/client';
 import { ReactView } from 'src/components/ReactView';
-
-export const AppContext = createContext<App | undefined>(undefined);
-export const useApp = (): App | undefined => {
-	return React.useContext(AppContext);
-};
+import { AppProvider } from 'src/AppContext';
 
 export default class FuzzySearcher extends Plugin {
-	//private modal: CreationModal | null;
+	root: Root | null = null;
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
-		//this.modal = null;
 	}
 
 	async onload() {
@@ -27,29 +19,19 @@ export default class FuzzySearcher extends Plugin {
 				const containerEl = document.body;
 
 				const element = containerEl.createEl('div');
-				element.className = 'modalalalalal';
-				element.style.position = 'absolute';
-				element.style.top = '50%';
-				element.style.left = '50%';
-				element.style.display = 'flex';
-				element.style.justifyContent = 'center';
-				element.style.alignItems = 'center';
+				this.root = createRoot(element);
 
-				const root = createRoot(element);
-
-				root.render(
-					React.createElement(
-						AppContext.Provider,
-						{ value: this.app },
-						React.createElement(ReactView, {})
-						//React.createElement('div', {}, 'Hello world')
-					),
+				this.root.render(
+					React.createElement(AppProvider, {
+						app: this.app,
+						children: React.createElement(ReactView, {
+							close: () => this.root?.unmount(),
+						}),
+					})
 				);
 			},
 		});
 	}
 
-	onunload() {
-		//TODO.
-	}
+	onunload() {}
 }
