@@ -12,7 +12,7 @@ const FileInfo = z.object({
 
 type FileInfoType = z.infer<typeof FileInfo>;
 
-export const ReactView = ({ close }: { close: () => void }) => {
+export const TreeSearcher = ({ close }: { close: () => void }) => {
 	const root = useApp().tree!;
 
 	const form = useForm<FileInfoType>({
@@ -22,7 +22,7 @@ export const ReactView = ({ close }: { close: () => void }) => {
 		},
 	});
 
-	function Path({ next }: { next: () => void }) {
+	function Path() {
 		const [openTrees, setOpenTress] = useState<FileTree[]>([root]);
 		const [selected, setSelected] = useState<number>(0);
 
@@ -64,11 +64,24 @@ export const ReactView = ({ close }: { close: () => void }) => {
 		}, []);
 
 		useEffect(() => {
+			const selectedEle = toShow[selected];
+			const isDir = selectedEle.tree.children.length > 0;
+
 			const handleKeyDown = (e: KeyboardEvent) => {
 				if (e.key === 'k' && e.altKey && selected > 0) {
 					setSelected(selected - 1);
-				} else if (e.key === 'j' && e.altKey && selected < toShow.length - 1) {
+				}
+				else if (e.key === 'j' && e.altKey && selected < toShow.length - 1) {
 					setSelected(selected + 1);
+				}
+				else if (e.key === 'o' && e.altKey) {
+					if (isDir) {
+						if (openTrees.includes(selectedEle.tree))
+							setOpenTress(openTrees.filter((t) => t !== selectedEle.tree));
+						else
+							setOpenTress([...openTrees, selectedEle.tree]);
+					}
+					else { }
 				}
 				else if (e.key === 'Escape') {
 					close();
@@ -79,39 +92,8 @@ export const ReactView = ({ close }: { close: () => void }) => {
 			return () => {
 				window.removeEventListener('keydown', handleKeyDown);
 			};
-		}, [selected]);
+		}, [selected, openTrees, toShow]);
 
-
-		function File({ file, selected }: { file: string, selected: boolean }) {
-			return <div className={`${selected ? 'text-orange-800' : ''}`}>{file}</div>;
-		}
-
-		function Dir({ tree, selected }: { tree: FileTree, selected: boolean }) {
-			useEffect(() => {
-				if (!selected)
-					return;
-
-				const handleKeyDown = (e: KeyboardEvent) => {
-					if (e.key === 'o' && e.altKey) {
-						if (openTrees.includes(tree))
-							setOpenTress(openTrees.filter((t) => t !== tree));
-						else
-							setOpenTress([...openTrees, tree]);
-					}
-				}
-
-				window.addEventListener('keydown', handleKeyDown);
-				return () => {
-					window.removeEventListener('keydown', handleKeyDown);
-				};
-			}, [selected]);
-
-			return (
-				<div>
-					<div className={`${selected ? 'text-orange-800' : ''}`}>{'>'}{tree.name}</div>
-				</div>
-			);
-		}
 
 		return (
 			<div>
@@ -123,11 +105,17 @@ export const ReactView = ({ close }: { close: () => void }) => {
 								{
 									tree.children.length > 0 ? (
 										<div style={{ paddingLeft: padding * 6 + 'px' }}>
-											<Dir tree={tree} selected={i === selected} />
+											<div
+												className={`${selected === i ? 'text-orange-800' : ''}`}>
+												{'>'}{tree.name}
+											</div>
 										</div>
 									) : (
 										<div style={{ paddingLeft: padding * 6 + 'px' }}>
-											<File file={tree.name} selected={i === selected} />
+											<div
+												className={`${selected === i ? 'text-orange-800' : ''}`}>
+												{tree.name}
+											</div>
 										</div>
 									)
 								}
@@ -135,21 +123,15 @@ export const ReactView = ({ close }: { close: () => void }) => {
 						);
 					})}
 				</div>
-				<button onClick={next}>Next</button>
 			</div>
 		);
-	}
-
-	function submit() {
-		const result = FileInfo.parse(form.getValues());
-		console.log(result);
 	}
 
 	return (
 		<FormProvider {...form}>
 			<div className="py-6 px-4 absolute top-1/4 right-1/2 translate-x-1/2 flex flex-col items-start gap-4 border border-1 border-[#555555] bg-[#1e1e1e] rounded-lg min-w-[40%]">
 				<span onClick={close} className="absolute top-4 right-6 text-xl cursor-pointer">X</span>
-				<Path next={submit} />
+				<Path />
 			</div>
 		</FormProvider>
 	);

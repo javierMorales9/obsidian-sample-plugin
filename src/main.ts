@@ -1,7 +1,7 @@
 import { Plugin, App, PluginManifest } from 'obsidian';
 import * as React from 'react';
 import { Root, createRoot } from 'react-dom/client';
-import { ReactView } from 'src/components/ReactView';
+import { TreeSearcher } from 'src/components/TreeSearcher';
 import { AppProvider } from 'src/AppContext';
 
 export default class FuzzySearcher extends Plugin {
@@ -24,7 +24,7 @@ export default class FuzzySearcher extends Plugin {
 				this.root.render(
 					React.createElement(AppProvider, {
 						app: this.app,
-						children: React.createElement(ReactView, {
+						children: React.createElement(TreeSearcher, {
 							close: () => this.root?.unmount(),
 						}),
 					})
